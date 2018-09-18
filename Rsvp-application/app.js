@@ -1,10 +1,11 @@
 //document.addEventListener('DomContentLoaded', () => {
 const form = document.getElementById('registrar');
 const input = document.querySelector('input');
+const button = document.querySelector('button');
 
 const mainDiv = document.querySelector('.main');
 const ul = document.getElementById('invitedList');
-const lit = document.getElementsByTagName('li');
+let listItems = document.getElementsByTagName('li');
 
 // create the filter div
 const div = document.createElement('div');
@@ -41,35 +42,59 @@ filterCheckBox.addEventListener('change', (event) => {
             listItems.style.display = '';
         }
     }
-})
+}) // end change
 
-//    
-//  validateInput = () => {
-//    // validate input received
-//    formContent = input.value
-//    
-//    for (let item of li) {
-//      liContent = item.firstElementChild.textContent
-//      if (  liContent.toLowerCase() === formContent.toLowerCase() ) {
-//        input.placeholder = 'Name already Exists!';
-//      }
-//    }
-//    
-//    if ( formContent === '' ) {
-//       input.placeholder = 'You must enter a name!';
-//    }
-//  }
-createGuestList = () => {
-    // add a guest to the guest list
+const validateInput = (formInput, list) => {
+    // validate input received
+    let validateObject = {};
+
+    if (input.value.length >= 16) {
+        validateObject.error = alert('Maximum characters is 15!');
+        validateObject.isValid = false;
+        return validateObject;
+    }
+
+    if (formInput === '') {
+        validateObject.error = alert('You must enter a name!');
+        validateObject.isValid = false;
+        return validateObject;
+    }
+    console.log(list);
+    for (let item of list) {
+        let liContent = item.firstElementChild.textContent;
+
+        if (liContent.toLowerCase() === formInput.toLowerCase().trim()) {
+            validateObject.error = alert('Name already Exists!');
+            validateObject.isValid = false;
+            input.value = '';
+            return validateObject;
+        }
+    }
+    validateObject.isValid = true;
+    return validateObject;
+
+} // end validateInput
+
+const createGuestList = () => {
+
+    // create li and span html elements
     const li = document.createElement('li');
     const span = document.createElement('span')
+
+    // get content from form
     formContent = input.value
 
+    // validate the content
+    const validationObject = validateInput(formContent, listItems)
 
-
-    // append the guest to invited list and clear the input field
-    ul.appendChild(li);
-    input.value = '';
+    if (!validationObject.isValid) {
+        validationObject.error
+    } else {
+        span.textContent = formContent;
+        li.appendChild(span);
+        ul.appendChild(li);
+        input.value = '';
+    }
 
     // create a label element
     const label = document.createElement('label')
@@ -94,12 +119,12 @@ createGuestList = () => {
     li.appendChild(label);
 
     return li;
-}
+} // end createGuestList
 
 form.addEventListener('submit', (event) => {
     event.preventDefault();
     createGuestList();
-});
+}); // end submit
 
 ul.addEventListener('change', (event) => {
     const checkbox = event.target;
@@ -110,7 +135,7 @@ ul.addEventListener('change', (event) => {
     } else {
         listItem.className = '';
     }
-})
+}); // end change
 
 // Edit, save and remove event handler
 ul.addEventListener('click', (event) => {
@@ -120,10 +145,12 @@ ul.addEventListener('click', (event) => {
         const content = event.target.parentNode.parentNode;
         const ul = content.parentNode;
 
-        removeName = () => {
+        const removeName = () => {
             ul.removeChild(content);
-        }
-        editName = () => {
+
+        } // end removeName
+
+        const editName = () => {
             const span = content.firstElementChild;
             const input = document.createElement('input');
             input.type = 'text';
@@ -131,16 +158,26 @@ ul.addEventListener('click', (event) => {
             content.insertBefore(input, span);
             content.removeChild(span);
             button.textContent = 'Save';
-        }
 
-        saveName = () => {
+        } // end editName
+
+        const saveName = () => {
             const input = content.firstElementChild;
             const span = document.createElement('span');
             span.textContent = input.value;
-            content.insertBefore(span, input);
-            content.removeChild(input);
-            button.textContent = 'Edit';
-        }
+
+            // validate the content
+            const validationObject = validateInput(span.textContent, listItems)
+
+            if (!validationObject.isValid) {
+                validationObject.error;
+                return;
+            } else {
+                content.insertBefore(span, input);
+                content.removeChild(input);
+                button.textContent = 'Edit';
+            }
+        } // end saveName
 
         if (button.textContent === 'Remove') {
             removeName();
